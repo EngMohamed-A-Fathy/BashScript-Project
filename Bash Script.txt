@@ -1,0 +1,131 @@
+select x in "Create Database user" "Delete Database User" "Create new Database" "Delete an existing Database" "Exit"
+do
+if [[ $x == "Create Database user" ]]
+then
+userConfirmation=$(cat DB_admins.db | grep -w $(whoami) | wc -l)
+if [[ $userConfirmation -eq 1 ]]
+then
+
+read -p "Please enter the user you want to add" username
+        userCheck=$(cat DB_admins.db | grep -w $username | wc -l)
+        if [[ $userCheck -ne 1 ]]
+        then
+                echo $username >> DB_admins.db
+                echo "Thanks for using MySQL, new user added"
+        else
+                echo "User you are entering already exist"
+        fi
+else
+echo "sorry you don't have access to addusers"
+fi
+fi
+if [[ $x == "Delete Database User" ]]
+then
+        userConfirmation=$(cat DB_admins.db | grep -w $(whoami) | wc -l)
+        if [[ $userConfirmation -eq 1 ]]
+        then
+        select y in $(cat DB_admins.db) Back
+        do
+                if [[ $y == "Back" ]]
+                then
+                echo Welcome back to the main menu , Please enter a number for new command
+                break
+                fi
+                if [[ $y == "Oracle" ]]
+                then
+                echo "Sorry , you can't delete user Oracle"
+                else
+                sed -i /$y/d  DB_admins.db
+                echo $y user deleted successfully
+                fi
+        done
+        else
+                echo "Sorry you don't have access to delete users"
+        fi
+fi
+if [[ $x == "Create new Database" ]]
+then
+        userConfirmation=$(cat DB_admins.db | grep -w $(whoami) | wc -l)
+        if [[ $userConfirmation -eq 1 ]]
+        then
+        read -p "Please enter the database name you want : " name
+        mkdir -p ./DataBases/$name
+        touch ./DataBases/$name/owner.txt
+        whoami > ./DataBases/$name/owner.txt
+        echo "Database created successfully, Thanks for using MySQL service"
+        else
+        echo "Sorry you don't have access to create any Database, Contact DBA"
+        fi
+fi
+if [[ $x == "Delete an existing Database" ]]
+then
+                userConfirmation=$(cat DB_admins.db | grep -w $(whoami) | wc -l)
+                if [[ $userConfirmation -eq 1 ]]
+                then
+                echo "Please select the database you want to delete"
+                select z in $(ls DataBases) Back
+                do
+                        if [[ $z == "Back" ]]
+						then
+                                echo Welcome back to the main menu, please enter a number for new command
+                                break
+                        fi
+                                ownerconfirmation=$(cat ./DataBases/$z/owner.txt | grep -w $(whoami) | wc -l)
+                        if [[ $ownerconfirmation -eq 1 ]]
+                        then
+                                rm -r ./DataBases/$z
+                                echo "$z Database deleted successfully, want to delete other database?"
+                        else
+                                echo "You aren't the owner of this database, please choose another one"
+                        fi
+                done
+                else
+                        echo "you don't have access to delete any database, please contact dba"
+fi
+fi
+if [[ $x == "Create A new Table inside Database" ]]
+then
+        userConfirmation=$(cat DB_admins.db | grep -w $(whoami) | wc -l)
+        if [[ $userConfirmation -eq 1 ]]
+        then
+        echo "Please select the database you want to create the table inside"
+        select q in $(ls DataBases) Back
+        do
+                if [[ $q == "Back" ]]
+                then
+                        echo "Welcome back to the main menu, please enter a number for new command "
+                        break
+                fi
+                ownerconfirmation=$(cat ./DataBases/$q/owner.txt | grep -w $(whoami) | wc -l)
+                if [[ $ownerconfirmation -eq 1 ]]
+                then
+                        read -p "Please enter the table name you want to create" table_name
+                        touch ./DataBases/$q/$table_name
+                        read -p "Please enter the number of columns needed" number_of_column
+                        count=1
+						while [[ $count -le $number_of_column ]]
+                        do
+                                read -p "Enter column name" mycolname
+                                count=$((count+1))
+                        if [[ $count -le number_of_column ]]
+                        then
+                                echo -n $mycolname"," >> ./DataBases/$q/$table_name
+                        else
+                                echo -n $mycolname >> ./DataBases/$q/$table_name
+                        fi
+                        done
+                else
+                        echo "You aren't the owner of this database, please choose another one"
+                fi
+        done
+        else
+                echo "You don't have access to delete any database, please contact dba"
+fi
+fi
+
+if [[ $x == "Exit" ]]
+then
+exit
+fi
+done
+
